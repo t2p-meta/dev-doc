@@ -187,3 +187,38 @@ const buildJs = qn
 
 
 ```
+
+## 项目 UI 层介绍
+
+> 项目集成Vuetify UI ,其中按钮组件 form 部分组件基于Vuetify 2.x 组件开发，组件API 文档参见
+
+https://vuetifyjs.com/zh-Hans/getting-started/installation/
+
+> UI 动态效果使用 wowjs & AOS [此部分为赵老师引入，功能使用参见其官方文档]
+
+### 项目封装组件
+
+- Toast 【位于：src\meta-ui\toast 】 全局弹出提示： $.toast('','fail')
+- 右上角钱包登录封装 【位于：src\meta-ui\connector】
+- 页面中所有带圆尖头图标的跳转链接封装 【位于：src\meta-ui\navigator】 <Meta-router path="xxx" text="xxx" />
+- 基于Opensea标准的元宇宙NFT traits 选择器封装 【】，使用方式 <MetaTraitsEditor category="" />
+
+```vue
+      <MetaTraitsEditor
+        ref="MetaTraitEditor"
+        title="Add Opensea Traits"
+        :category="categoryName"
+        :customized="0"
+        @traitsChanged="metaTraitsChanged"
+      />
+```
+
+### 前端缓存管理源码
+
+> 前端采用Vuex 缓存页面接口数据： src/store
+
+> 其中 merge-actions.js，core-mutations.js,core-geeters 合并自较新版本fingerchar 2022.04.19 更新版本
+
+> meta-actions 在fingerchar 基础上封装方法
+
+> 其余模块代码[ui/nftcard/pocket/biz/user]根据业务独立开发，与fingerchar 无关联
