@@ -222,3 +222,173 @@ https://vuetifyjs.com/zh-Hans/getting-started/installation/
 > meta-actions 在fingerchar 基础上封装方法
 
 > 其余模块代码[ui/nftcard/pocket/biz/user]根据业务独立开发，与fingerchar 无关联
+
+
+### 前端区块链网络配置
+
+- src\settings.js 
+
+```js
+const PLOYGON_MUMBAI = {
+  channelId: 80001,
+  name: 'Mumbai',
+  coinSymbol: 'MATIC',
+  symbol: 'MATIC',
+  default: false,
+  rpc: 'https://rpc-mumbai.matic.today',
+  rpcUrls: [
+    'https://matic-mumbai.chainstacklabs.com',
+    'https://rpc-mumbai.matic.today',
+  ],
+  privateRpc: process.env.VUE_APP_ALCHEMY_MUMBAI_APIKEY
+    ? `https://polygon-mumbai.g.alchemy.com/v2/${process.env.VUE_APP_ALCHEMY_MUMBAI_APIKEY}`
+    : '',
+  blockExplorerUrls: ['https://mumbai.polygonscan.com/'],
+  hasBlindbox: true,
+  hasAuction: true,
+  opensea: 'https://testnets.opensea.io/assets/mumbai/',
+  eip1559: false,
+}
+
+//https://polygon-mainnet.g.alchemy.com/v2/
+const PLOYGON_MAINNET = {
+  channelId: 137,
+  name: 'Polygon Mainnet',
+  coinSymbol: 'MATIC',
+  symbol: 'MATIC',
+  default: false,
+  rpc: 'https://rpc-mainnet.matic.network',
+  rpcUrls: [
+    'https://matic-mainnet.chainstacklabs.com',
+    'https://rpc-mainnet.maticvigil.com',
+    'https://rpc-mainnet.matic.quiknode.pro',
+    'https://matic-mainnet-full-rpc.bwarelabs.com',
+  ],
+  privateRpc: process.env.VUE_APP_ALCHEMY_MATIC_APIKEY
+    ? `/https://polygon-mainnet.g.alchemy.com/v2/${process.env.VUE_APP_ALCHEMY_MATIC_APIKEY}`
+    : '',
+  blockExplorerUrls: ['https://polygonscan.com/'],
+  hasBlindbox: true,
+  hasAuction: true,
+  opensea: 'https://testnets.opensea.io/assets/mumbai/',
+  eip1559: false,
+}
+
+module.exports = {
+  pageLimit: 20,
+  deploy: true,
+  name: 'SAME NFT',
+  url: 'https://planet2nd.com',
+  signMessage:
+    "Welcome Login Planet2nd Market. This is completely secure and doesn't cost anything!",
+  decimal: 8,
+  networks: [
+    {
+      channelId: 4,
+      name: 'Ropsten Testnet',
+      coinSymbol: 'ETH',
+      symbol: 'ETH',
+      default: false,
+      rpc: 'https://rinkeby.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161',
+      hasBlindbox: true,
+      hasAuction: true,
+      opensea: '',
+      eip1559: false,
+    },
+    {
+      ...PLOYGON_MAINNET,
+      default: false,
+    },
+    {
+      ...PLOYGON_MUMBAI,
+      default: true,
+    },
+    {
+      channelId: 8899,
+      name: 'Local',
+      coinSymbol: 'ETH',
+      symbol: 'ETH',
+      default: false,
+      rpc: 'http://192.168.50.141:8545/',
+      hasBlindbox: true,
+      hasAuction: true,
+      opensea: 'https://testnets.opensea.io/assets/mumbai/',
+      eip1559: false,
+    },
+  ],
+  share: {
+    twitter: 'https://mobile.twitter.com',
+    telegram: 'https://t.me',
+    email: '2ndP@csdn.net',
+    youtube: 'https://youtube.com/channel',
+  },
+}
+
+```
+
+## Opensea Traits 选择器 
+
+> 代码目录 src\meta-ui\opensea
+
+### 新增业务分类
+
+- 1. 新建业务分类对应traits 文件 xxx-traits.js 
+```js 
+export const XXXX_TRAIT_STATE = {
+  traitType: COORDINATE_TRAIT_KEY, // 对应opensea 的trait_type
+  value: '', // opensea value 
+  displayType: NONE_TRIAIT_DISTYPE, // 对应Opensea 的disolay_type 属性值
+  sort: 8, // 显示顺序
+  required: false, // 是否必填
+  validation: function valid(v) {  //trait 输入值 校验函数
+    return !/^(-)?([\d]+),(-)?([\d]+)$/.test(v) && this.required
+      ? `${COORDINATE_TRAIT_KEY} rquired the land [xc,yc].`
+      : ''
+  },
+  descI18n: 'opensea.traits.coordinate', 
+  desc: `Please entry the land coordinate like 102,15`,  // Traits 描述 ，提供给用户填写提示的UI显示
+  readonly: false,  // 定义为只读时，UI 不允许修改
+  categories: [CATEGORY_ITEM_LAND, CATEGORY_ITEM_PASSPORT],  // 所属category 用于根据分类过滤 不同traits
+}
+```
+
+- 2. 修改categories 增加业务类型
+- 3. 修改 src\meta-ui\opensea\traits-handler.js 将新增traits数组增加到ALL_TRAITS_ITEMS
+- 4. 页面UI 调用
+
+```vue
+<MetaTraitsEditor
+  ref="MetaTraitEditor"
+  title="Add Opensea Traits"
+  :category="categoryName"
+  :customized="0"
+  @traitsChanged="metaTraitsChanged"
+/>
+```
+
+### Opensea Traits 工具类
+
+- filterTraitByCategory 根据category 过滤对应的traits
+- getMetaJson 获取 页面填写的traits 数组，去重后的
+- mergeKVTraits ： 合并traits ，同时去重，参数为 key/value 形式 ，如 {postcode: 'N1K B0J'}
+
+```js
+  const PostcodeKey = 'Postcode'
+  const ParcelsKey = 'Parcel'
+  const CoordinateKey = 'Coordinate'
+
+  let postcode = coordinateStringify(xc, yc)
+    ? coordinateStringify(xc, yc)
+    : ''
+
+  const traitMap = {
+    [CoordinateKey]: `${xc},${yc}`,
+    [ParcelsKey]: parcel,
+    [PostcodeKey]: postcode,
+  }
+
+  return mergeKVTraits(traits, traitMap)
+```
+
+- mergeTraits： :合并traits ,同时去重，参数为 数组
+
