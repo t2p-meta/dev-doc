@@ -13,7 +13,18 @@
   <script>
     window.$docsify = {
       name: 'Meta Doucment',
-      repo: ''
+      repo: '',
+      loadSidebar: "_sidebar.md",
+      auto2top: true,
+      maxLevel: 3,
+      subMaxLevel: 2,
+      plugins: [
+        function (hook, vm) {
+          hook.beforeEach(function (content) {
+            return content.replace(/..\/..\/images/g, "img");
+          });
+        },
+      ],
     }
   </script>
   <!-- Docsify v4 -->
