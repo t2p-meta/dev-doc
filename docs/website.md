@@ -65,6 +65,18 @@ PLUG_METAMASK_FOX=https://addons.mozilla.org/zh-CN/firefox/addon/ether-metamask/
 
 ```
 
+## 前端主要命令
+
+```bash 
+npm run build // yarn build  打包正式环境
+npm run opt // 优化测试打包
+npm run dev // 本地开发启动 
+
+```
+
+- [--prerender] 在production 模式下增加该参数，启用预渲染打包模式，打包成功后文件目录为 dist/vue
+- [--report] 开启打包优化分析功能 [--prerender 同时开启，report 无效]
+
 ## 游戏地图组件
 
 ### 组件目录结构
@@ -392,3 +404,48 @@ export const XXXX_TRAIT_STATE = {
 
 - mergeTraits： :合并traits ,同时去重，参数为 数组
 
+## 游戏唤起按钮
+
+- 文件目录 ：src\meta-ui\wakeup
+- 核心文件： src\meta-ui\wakeup\play-button.vue
+
+### 默认 游戏唤起url 前缀
+
+> https://game.planet2nd.com/iplayer/download?mapId
+
+打包配置： .env.Local
+WAKEUP_IFRAME_URL=https://game.planet2nd.com/iplayer/download
+
+### 使用方式
+
+> mapid : 游戏id 必传
+
+```vue
+<PlayBtn
+  text="Play Game"
+  mapid="211665193871082031"
+  mapname="小岛"
+  :ignorePassport="true" 
+  arrow 
+></PlayBtn>
+
+<PlayBtn
+      text="Play Game"
+      mapid="211665193871082031"
+      mapname="小岛"
+      ignorePassport //控制是否校验 Passport 
+      arrow // 隐藏 箭头按钮
+></PlayBtn>
+<!-- 
+:ignorePassport="true" 控制是否校验 Passport 
+ arrow /*隐藏 箭头按钮*/
+-->       
+
+
+```
+
+### Iframe 内部主动通知parent弹出窗口关闭
+
+```js
+parent.postMessage("closePlayerPopup","*");  // closePlayerPopup 与 play-button.vue 中handlePostMessage 判断对应
+```
